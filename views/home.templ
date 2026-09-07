@@ -3,8 +3,8 @@ package views
 templ Home(title string, name string) {
 	@Layout(title, name) {
 		<div class="text-center py-10 px-4 sm:px-6 lg:px-8">
-			<h1 class="text-4xl font-bold text-white sm:text-5xl">Hello! 👋</h1>
-			<div class="mt-5 text-lg text-gray-300">
+			<h1 class="text-4xl font-bold text-gray-900 dark:text-white sm:text-5xl">Hello! 👋</h1>
+			<div class="mt-5 text-lg text-gray-600 dark:text-gray-300">
 				<p class="max-w-prose mx-auto">
 					Curious what I'm up to nowadays? Check some
 					of
@@ -37,8 +37,8 @@ templ Home(title string, name string) {
 			</div>
 			<div id="form-container" class="mt-8"></div>
 			<div id="repos" hx-get="/browse-repos" hx-trigger="load" hx-target="#repos">
-				<button type="button" class="text-white" disabled>
-					<svg class="mr-3 size-5 animate-spin text-white" viewBox="0 0 24 24"></svg>
+				<button type="button" class="text-gray-900 dark:text-white" disabled>
+					<svg class="mr-3 size-5 animate-spin text-gray-900 dark:text-white" viewBox="0 0 24 24"></svg>
 					Browsing GitHub Repositories…
 				</button>
 			</div>

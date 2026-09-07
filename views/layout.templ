@@ -11,10 +11,14 @@ templ Layout(title string, name string) {
 			<link rel="icon" href="/assets/svg/favicon.svg"/>
 			<link rel="stylesheet" href="/style/output.css"/>
 			<link rel="webmention" href="https://august.andanti.no/webmention"/>
+			<script>
+				(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark")}else{document.documentElement.classList.remove("dark")}}catch(e){}})();
+				function toggleTheme(){var dark=document.documentElement.classList.toggle("dark");try{localStorage.setItem("theme",dark?"dark":"light")}catch(e){}}
+			</script>
 			<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
 			<title>{ title }</title>
 		</head>
-		<body hx-boost="true" class="bg-gray-900/95">
+		<body hx-boost="true" class="bg-gray-100 text-gray-900 dark:bg-gray-900/95 dark:text-white">
 			<div class="max-w-400 flex flex-col mx-auto size-full">
 				@components.Header(name)
 				<main id="content">
