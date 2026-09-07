@@ -32,11 +32,11 @@
 
 @layer base {
     :root {
-        color-scheme: light;
+        color-scheme: dark;
     }
 
-    :root.dark {
-        color-scheme: dark;
+    :root:not(.dark) {
+        color-scheme: light;
     }
 
     html {
