@@ -33,12 +33,12 @@ jobs:
           podman build \
             --layers \
             --pull=missing \
-            --tag "webpage:${{ github.sha }}" \
-            --tag "webpage:latest" .
+            --tag "0xviva/0xviva.dev:${{ github.sha }}" \
+            --tag "0xviva/0xviva.dev:latest" .
 
           podman save \
             -o app.tar \
-            "webpage:${{ github.sha }}"
+            "0xviva/0xviva.dev:${{ github.sha }}"
 
       - name: Deploy via rsync
         uses: burnett01/rsync-deployments@6.0.0

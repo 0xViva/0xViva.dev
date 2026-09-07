@@ -3,7 +3,7 @@ package github
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/0xViva/webpage/components"
+	"github.com/0xViva/0xViva.dev/components"
 	"io"
 	"log"
 	"net/http"

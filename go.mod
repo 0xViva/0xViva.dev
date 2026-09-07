@@ -1,4 +1,4 @@
-module github.com/0xViva/webpage
+module github.com/0xViva/0xViva.dev
 
 go 1.24.0
 

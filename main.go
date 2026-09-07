@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/0xViva/webpage/components"
-	"github.com/0xViva/webpage/github"
-	"github.com/0xViva/webpage/views"
+	"github.com/0xViva/0xViva.dev/components"
+	"github.com/0xViva/0xViva.dev/github"
+	"github.com/0xViva/0xViva.dev/views"
 	"github.com/a-h/templ"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo"

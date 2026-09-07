@@ -8,8 +8,8 @@ env:
   PORT: 8080
 
 vars:
-  container_name: app
-  container_tag: latest
+  image_name: 0xviva/0xviva.dev
+  image_tag: latest
 
 tasks:
   dev:
@@ -27,7 +27,7 @@ tasks:
     deps:
       - task: generate
     cmds:
-      - docker build -t {{.container_name}}:{{.container_tag}} .
+      - docker build -t {{.image_name}}:{{.image_tag}} .
 
   generate:
     aliases:

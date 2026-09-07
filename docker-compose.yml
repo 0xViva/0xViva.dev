@@ -1,7 +1,7 @@
 services:
   webpage:
-    image: webpage:${IMAGE_TAG:-latest}
-    container_name: webpage
+    image: 0xviva/0xviva.dev:${IMAGE_TAG:-latest}
+    container_name: 0xViva.dev
     restart: unless-stopped
 
     environment:

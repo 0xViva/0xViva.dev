@@ -29,7 +29,7 @@ task build
 Build Docker container:
 
 ```sh
-task container container_name=<name> container_tag=<tag>
+task container image_name=<name> image_tag=<tag>
 ```
 
 ## Project Structure
@@ -70,13 +70,13 @@ add this file to your static assets:
 `assets/js/augustg-dev-badge.js`
 
 this one here:
-https://github.com/0xViva/webpage/blob/master/assets/js/augustg-dev-badge.js
+https://github.com/0xViva/0xViva.dev/blob/master/assets/js/augustg-dev-badge.js
 
 or get it from this url via <script> (at your own risk):
-https://raw.githubusercontent.com/0xViva/webpage/refs/heads/master/assets/js/augustg-dev-badge.js
+https://raw.githubusercontent.com/0xViva/0xViva.dev/refs/heads/master/assets/js/augustg-dev-badge.js
 
 Badge is using this font:
-https://github.com/0xViva/webpage/blob/master/assets/fonts/JetBrainsMonoNerdFontMono-Regular.ttf
+https://github.com/0xViva/0xViva.dev/blob/master/assets/fonts/JetBrainsMonoNerdFontMono-Regular.ttf
 
 then add it all together in your desired html location:
 ```
