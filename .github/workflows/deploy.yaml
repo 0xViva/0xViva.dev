@@ -57,6 +57,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         env:
           IMAGE_TAG: ${{ env.SHORT_SHA }}
+          CSS_VERSION: ${{ env.SHORT_SHA }}
           INTERNAL_PORT: ${{ vars.INTERNAL_PORT }}
           EXTERNAL_PORT: ${{ vars.EXTERNAL_PORT }}
           GITHUB_TOKEN: ${{ secrets.PAT }}
@@ -64,7 +65,7 @@ jobs:
           host: ${{ vars.VPS_ADDRESS }}
           username: deploy
           key: ${{ secrets.VPS_DEPLOYMENT_PRIVATE_KEY }}
-          envs: IMAGE_TAG,INTERNAL_PORT,EXTERNAL_PORT,GITHUB_TOKEN
+          envs: IMAGE_TAG,CSS_VERSION,INTERNAL_PORT,EXTERNAL_PORT,GITHUB_TOKEN
           script: |
             set -e
             cd /home/deploy/webpage

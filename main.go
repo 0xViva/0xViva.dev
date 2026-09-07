@@ -14,6 +14,7 @@ import (
 
 var (
 	githubToken string
+	cssVersion  string
 )
 
 func main() {
@@ -22,6 +23,10 @@ func main() {
 	godotenv.Load()
 
 	githubToken = os.Getenv("GITHUB_TOKEN")
+	cssVersion = os.Getenv("CSS_VERSION")
+	if cssVersion == "" {
+		cssVersion = "dev"
+	}
 
 	e.Use(middleware.Logger())
 	e.Static("/style", "style")
@@ -35,7 +40,7 @@ func main() {
 func homeView(c echo.Context) error {
 	name := "August Justinus Gran"
 	title := titleForHost(requestHost(c))
-	return render(c, views.Home(title, name))
+	return render(c, views.Home(title, name, cssVersion))
 
 }
 
