@@ -1,24 +1,43 @@
 package components
 
-templ Header() {
+templ Header(name string) {
 	<header class="relative mb-auto flex flex-wrap z-50 w-full text-sm py-4">
 		<nav class="w-full px-4 sm:flex sm:items-center sm:justify-between sm:px-6 lg:px-8">
-			<div class="flex items-center justify-between">
+			<div class="travel-tag flex items-center gap-3 py-3 pr-5 pl-10 sm:gap-4 sm:pr-6 sm:pl-11 -rotate-1 transition-transform duration-200 hover:rotate-0">
+				<span aria-hidden="true" class="travel-tag-hole"></span>
 				<a
-					class="flex-none text-xl font-semibold text-white focus:outline-none focus:opacity-80"
+					class="flex-none focus:outline-none focus:opacity-80"
 					href="/"
 					aria-label="Brand"
 				>
-					<img src="/assets/jpg/august.jpg" alt="Personal profile picture" class="profile-image"/>
+					<img src="/assets/jpg/august.jpg" alt="Personal profile picture" class="travel-tag-photo"/>
 				</a>
-				<augustg-dev-badge class="absolute top-4 right-4 scale-75 sm:scale-90 md:scale-100"></augustg-dev-badge>
+				<div class="travel-tag-perf flex min-w-0 flex-col gap-1.5 pl-3 sm:pl-4">
+					<div class="min-w-0">
+						<p class="text-[10px] uppercase tracking-[0.2em] text-gray-500">navn</p>
+						<p class="truncate text-lg font-semibold leading-tight tracking-tight text-white sm:text-xl">
+							{ name }
+						</p>
+					</div>
+					<div class="flex flex-wrap items-center gap-1.5">
+						<span class="text-[10px] uppercase tracking-[0.2em] text-gray-500">email:</span>
+						<a href="mailto:0xViva@proton.me" class="w-fit text-xs text-gray-300 hover:text-white hover:underline focus:outline-none">
+							0xViva@proton.me
+						</a>
+					</div>
+					<div class="flex flex-wrap items-center gap-1.5 border-t border-dashed border-gray-700 pt-1.5">
+						<span class="text-[10px] uppercase tracking-[0.2em] text-gray-500">aliases:</span>
+						<span class="travel-tag-stamp">0xViva</span>
+						<span class="travel-tag-stamp">AugustG</span>
+						<span class="travel-tag-stamp">ajg</span>
+					</div>
+				</div>
+			</div>
+			<div class="flex flex-col items-end gap-1 mt-4 sm:mt-0">
+				<p class="text-xs text-gray-400">look at my badge!</p>
+				<augustg-dev-badge class="scale-75 sm:scale-90 md:scale-100 origin-top-right"></augustg-dev-badge>
 				<script src="/assets/js/augustg-dev-badge.js"></script>
 			</div>
-			<div
-				id="hs-navbar-cover-page"
-				class="hs-collapse hidden overflow-hidden transition-all duration-300 basis-full grow sm:block"
-				aria-labelledby="hs-navbar-cover-page-collapse"
-			></div>
 		</nav>
 	</header>
 }

@@ -2,7 +2,7 @@ package views
 
 import "github.com/0xViva/0xViva.dev/components"
 
-templ Layout(title string) {
+templ Layout(title string, name string) {
 	<html>
 		<head>
 			<meta charset="UTF-8"/>
@@ -15,7 +15,7 @@ templ Layout(title string) {
 		</head>
 		<body hx-boost="true" class="bg-gray-900/95">
 			<div class="max-w-400 flex flex-col mx-auto size-full">
-				@components.Header()
+				@components.Header(name)
 				<main id="content">
 					{ children... }
 				</main>
