@@ -48,7 +48,7 @@ jobs:
         with:
           path: ./
           switches: -avzr --include=app.tar --include=docker-compose.yml --exclude=*
-          remote_path: /home/deploy/webpage/
+          remote_path: /home/deploy/0xviva.dev/
           remote_host: ${{ vars.VPS_ADDRESS }}
           remote_user: deploy
           remote_key: ${{ secrets.VPS_DEPLOYMENT_PRIVATE_KEY }}
@@ -68,7 +68,7 @@ jobs:
           envs: IMAGE_TAG,CSS_VERSION,INTERNAL_PORT,EXTERNAL_PORT,GITHUB_TOKEN
           script: |
             set -e
-            cd /home/deploy/webpage
+            cd /home/deploy/0xviva.dev
             podman load -i app.tar
             rm -f app.tar
             podman compose up -d --no-build
