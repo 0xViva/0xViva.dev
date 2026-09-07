@@ -2,58 +2,71 @@ name: Build and Deploy
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
-    paths-ignore:
-      - readme.md
+
+concurrency:
+  group: webpage-production
+  cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      # 1. Fetch the cached Podman/Buildah layers from previous runs
+      - name: Cache Podman Layers
+        uses: actions/cache@v4
         with:
-          go-version: "1.24" # Adjust Go version as needed
+          path: ~/.local/share/containers
+          key: ${{ runner.os }}-podman-${{ hashFiles('**/go.sum', 'Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-podman-
 
-      - name: Build Docker Image
+      # 2. Build using BuildKit features (which natively supports the Dockerfile mounts)
+      - name: Build and archive image
         run: |
-          docker build -t webpage:latest .
-          docker images
+          podman build \
+            --layers \
+            --pull=missing \
+            --tag "webpage:${{ github.sha }}" \
+            --tag "webpage:latest" .
 
-      - name: Log in and Push to Docker Hub
+          podman save \
+            -o app.tar \
+            "webpage:${{ github.sha }}"
+
+      - name: Deploy via rsync
+        uses: burnett01/rsync-deployments@6.0.0
+        with:
+          path: ./
+          switches: -avzr --include=app.tar --include=docker-compose.yml --exclude=*
+          remote_path: /home/deploy/webpage/
+          remote_host: ${{ vars.VPS_ADDRESS }}
+          remote_user: deploy
+          remote_key: ${{ secrets.VPS_DEPLOYMENT_PRIVATE_KEY }}
+
+      - name: Deploy with Compose
+        uses: appleboy/ssh-action@v1.0.3
         env:
-          DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        run: |
-          echo "$DOCKER_ACCESS_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
-          docker tag webpage:latest ${{ secrets.DOCKER_USERNAME }}/webpage:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/webpage:latest
-
-      - name: Setup SSH and Deploy to VPS
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          VPS_IP: ${{ secrets.VPS_IP }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "$VPS_IP" >> ~/.ssh/known_hosts
-
-          ssh august@"$VPS_IP" "
-          docker login -u '${{ secrets.DOCKER_USERNAME }}' -p '${{ secrets.DOCKER_ACCESS_TOKEN }}' &&
-          docker pull ${{ secrets.DOCKER_USERNAME }}/webpage:latest &&
-          docker rm -f webpage || true &&
-          docker run \
-            -e TO_EMAIL='${{ secrets.TO_EMAIL }}' \
-            -e EMAIL_PASSWORD='${{ secrets.EMAIL_PASSWORD }}' \
-            -e GITHUB_TOKEN='${{ secrets.PAT }}' \
-            -d --name webpage -p 10080:8080 --restart unless-stopped \
-            ${{ secrets.DOCKER_USERNAME }}/webpage:latest
-          "
-
+          IMAGE_TAG: ${{ github.sha }}
+          INTERNAL_PORT: ${{ vars.INTERNAL_PORT }}
+          EXTERNAL_PORT: ${{ vars.EXTERNAL_PORT }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          host: ${{ vars.VPS_ADDRESS }}
+          username: deploy
+          key: ${{ secrets.VPS_DEPLOYMENT_PRIVATE_KEY }}
+          envs: IMAGE_TAG,INTERNAL_PORT,EXTERNAL_PORT,GITHUB_TOKEN
+          script: |
+            set -e
+            cd /home/deploy/webpage
+            podman load -i app.tar
+            rm -f app.tar
+            podman compose up -d --no-build
+            podman compose ps
+            podman image prune -f

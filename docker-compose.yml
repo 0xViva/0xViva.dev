@@ -1,0 +1,12 @@
+services:
+  webpage:
+    image: webpage:${IMAGE_TAG:-latest}
+    container_name: webpage
+    restart: unless-stopped
+
+    environment:
+      PORT: ${INTERNAL_PORT}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+
+    ports:
+      - "127.0.0.1:${EXTERNAL_PORT}:${INTERNAL_PORT}"
