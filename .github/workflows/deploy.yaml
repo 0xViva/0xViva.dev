@@ -27,18 +27,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-podman-
 
+      - name: Set short SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       # 2. Build using BuildKit features (which natively supports the Dockerfile mounts)
       - name: Build and archive image
         run: |
           podman build \
             --layers \
             --pull=missing \
-            --tag "0xviva/0xviva.dev:${{ github.sha }}" \
+            --tag "0xviva/0xviva.dev:${SHORT_SHA}" \
             --tag "0xviva/0xviva.dev:latest" .
 
           podman save \
             -o app.tar \
-            "0xviva/0xviva.dev:${{ github.sha }}"
+            "0xviva/0xviva.dev:${SHORT_SHA}"
 
       - name: Deploy via rsync
         uses: burnett01/rsync-deployments@6.0.0
@@ -53,7 +56,7 @@ jobs:
       - name: Deploy with Compose
         uses: appleboy/ssh-action@v1.0.3
         env:
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ env.SHORT_SHA }}
           INTERNAL_PORT: ${{ vars.INTERNAL_PORT }}
           EXTERNAL_PORT: ${{ vars.EXTERNAL_PORT }}
           GITHUB_TOKEN: ${{ secrets.PAT }}
