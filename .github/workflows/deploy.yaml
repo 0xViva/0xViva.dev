@@ -43,17 +43,17 @@ jobs:
             -o app.tar \
             "0xviva/0xviva.dev:${SHORT_SHA}"
 
-      - name: Deploy via rsync
+      - name: Deploy image, Quadlet and script via rsync
         uses: burnett01/rsync-deployments@6.0.0
         with:
           path: ./
-          switches: -avzr --include=app.tar --include=docker-compose.yml --exclude=*
+          switches: -avzr --include=app.tar --include=deploy.sh --include=quadlet/ --include=quadlet/** --exclude=*
           remote_path: /home/deploy/0xviva.dev/
           remote_host: ${{ vars.VPS_ADDRESS }}
           remote_user: deploy
           remote_key: ${{ secrets.VPS_DEPLOYMENT_PRIVATE_KEY }}
 
-      - name: Deploy with Compose
+      - name: Deploy with Quadlet
         uses: appleboy/ssh-action@v1.0.3
         env:
           IMAGE_TAG: ${{ env.SHORT_SHA }}
@@ -67,10 +67,11 @@ jobs:
           key: ${{ secrets.VPS_DEPLOYMENT_PRIVATE_KEY }}
           envs: IMAGE_TAG,CSS_VERSION,INTERNAL_PORT,EXTERNAL_PORT,GITHUB_TOKEN
           script: |
-            set -e
+            set -euo pipefail
             cd /home/deploy/0xviva.dev
             podman load -i app.tar
             rm -f app.tar
-            podman compose up -d --no-build
-            podman compose ps
+            bash deploy.sh
             podman image prune -f
+            podman ps --filter name=0xViva.dev \
+              --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'

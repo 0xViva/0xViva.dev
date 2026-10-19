@@ -46,11 +46,13 @@ task container image_name=<name> image_tag=<tag>
 
 ## Deployment
 
-Automated deployment via GitHub Actions:
-
-- Builds Docker image on push to master
-- Pushes to Docker Hub
-- Deploys to VPS via SSH
+Production runs as a rootless Podman **Quadlet** (`0xviva.service`, container
+`0xViva.dev`) on the VPS. `.github/workflows/deploy.yaml` is manual
+(`workflow_dispatch`): it builds the image, rsyncs it together with `deploy.sh`
+and `quadlet/`, then over SSH loads the image and runs `deploy.sh`, which
+renders the unit and restarts it. The unit's
+`[Install] WantedBy=default.target` plus lingering for `deploy` makes systemd
+start it after a host reboot. `podman compose` is no longer used in production.
 
 ## Docker
 

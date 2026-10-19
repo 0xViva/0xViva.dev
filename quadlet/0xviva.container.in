@@ -1,0 +1,23 @@
+# Quadlet template — rendered by deploy.sh into
+# ~/.config/containers/systemd/. Do not edit the rendered copy on the host.
+
+[Unit]
+Description=0xViva.dev / augustg.dev personal site (rootless Podman)
+# Keep retrying forever instead of giving up after the default 5 starts.
+StartLimitIntervalSec=0
+
+[Container]
+Image=localhost/0xviva/0xviva.dev:@IMAGE_TAG@
+# The image is loaded from app.tar by the deploy workflow; never pull it.
+Pull=never
+ContainerName=0xViva.dev
+EnvironmentFile=/home/deploy/0xviva.dev/.env
+PublishPort=127.0.0.1:@EXTERNAL_PORT@:@INTERNAL_PORT@
+
+[Service]
+Restart=always
+RestartSec=5s
+
+[Install]
+# Quadlet applies [Install] itself; this makes the unit start on boot.
+WantedBy=default.target
