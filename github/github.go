@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -65,6 +66,12 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 	)
 
 	for _, repo := range repos {
+		// The profile repo only holds the README shown on the GitHub profile,
+		// so its commits do not belong in the feed.
+		if strings.EqualFold(repo.Name, repo.Owner.Login) {
+			continue
+		}
+
 		repo := repo
 		repoWg.Add(1)
 		go func() {
