@@ -4,24 +4,30 @@ import "github.com/0xViva/0xViva.dev/components"
 
 templ Layout(title string, name string, cssVersion string) {
 	<!DOCTYPE html>
-	<html class="dark">
+	<html lang="en">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<link rel="icon" href="/assets/svg/favicon.svg"/>
+			<meta name="color-scheme" content="dark"/>
+			<meta name="theme-color" content="#04070a"/>
+			<meta name="description" content="August J. Gran. Software developer. Recent GitHub commits."/>
+			<link rel="icon" href="/assets/svg/favicon.svg" type="image/svg+xml"/>
 			<link rel="stylesheet" href={ "/style/output.css?v=" + cssVersion }/>
-			<link rel="webmention" href="https://august.andanti.no/webmention"/>
-			<script>
-				(function(){try{var t=localStorage.getItem("theme");if(t==="light"){document.documentElement.classList.remove("dark")}else{document.documentElement.classList.add("dark")}}catch(e){document.documentElement.classList.add("dark")}})();
-				function toggleTheme(){var dark=document.documentElement.classList.toggle("dark");try{localStorage.setItem("theme",dark?"dark":"light")}catch(e){}}
-			</script>
-			<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+			<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" defer></script>
+			<script src="/assets/js/hud.js" defer></script>
 			<title>{ title }</title>
 		</head>
-		<body hx-boost="true" class="bg-gray-100 text-gray-900 dark:bg-gray-900/95 dark:text-white">
-			<div class="max-w-400 flex flex-col mx-auto size-full">
+		<body class="min-h-screen bg-void text-fg" hx-boost="true">
+			<div aria-hidden="true" class="tech-grid pointer-events-none fixed inset-0 z-0"></div>
+			<div aria-hidden="true" class="glow-cyan pointer-events-none fixed inset-0 z-0"></div>
+			<div aria-hidden="true" class="glow-acid pointer-events-none fixed inset-0 z-0"></div>
+			<div aria-hidden="true" class="vignette pointer-events-none fixed inset-0 z-0"></div>
+			<div aria-hidden="true" class="pointer-glow pointer-events-none fixed inset-0 z-0"></div>
+			<div aria-hidden="true" class="scanlines pointer-events-none fixed inset-0 z-0"></div>
+			<div aria-hidden="true" class="noise pointer-events-none fixed inset-0 z-0"></div>
+			<div class="relative z-10 flex min-h-screen flex-col">
 				@components.Header(name)
-				<main id="content">
+				<main id="content" class="flex-1">
 					{ children... }
 				</main>
 				@components.Footer()

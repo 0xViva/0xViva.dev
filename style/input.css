@@ -1,33 +1,29 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
-@font-face {
-    font-family: 'Silkscreen';
-    src: url('/assets/fonts/Silkscreen-Regular.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Press Start 2P';
-    src: url('/assets/fonts/PressStart2P-Regular.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'monospace';
-    src: url('/assets/fonts/MonospaceBold.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-}
-
 @font-face {
     font-family: 'JetBrainsMono Nerd';
     src: url('/assets/fonts/JetBrainsMonoNerdFontMono-Regular.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
+    font-display: swap;
+}
+
+@theme {
+    --font-mono: 'JetBrainsMono Nerd', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --color-void: #04070a;
+    --color-ink: #070c11;
+    --color-panel: #0a1016;
+    --color-panel-2: #0d151d;
+    --color-line: #172630;
+    --color-line-hot: #294654;
+    --color-fg: #d6e6ec;
+    --color-muted: #7a919c;
+    --color-dim: #4a5f6a;
+    --color-acid: #00ff9c;
+    --color-cyan: #00d9ff;
+    --color-magenta: #ff2e63;
+    --color-amber: #ffb000;
 }
 
 @layer base {
@@ -35,82 +31,329 @@
         color-scheme: dark;
     }
 
-    :root:not(.dark) {
-        color-scheme: light;
+    html {
+        scroll-behavior: smooth;
     }
 
-    html {
-        @apply h-full bg-gray-100 text-gray-900 dark:bg-gray-900/95 dark:text-white;
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
     }
 
     body {
-        font-family: 'JetBrainsMono Nerd';
-        @apply h-full min-h-screen flex flex-col items-center;
+        @apply bg-void font-mono text-fg antialiased;
+        overflow-x: clip;
     }
 
-    main {
-        @apply flex-1 w-full;
+    ::selection {
+        background: var(--color-acid);
+        color: var(--color-void);
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-acid);
+        outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+
+        .ticker-track,
+        .scanlines,
+        .repo-card,
+        .cursor-block,
+        .led,
+        .load-bar::after {
+            animation: none !important;
+        }
+
+        .repo-card {
+            animation-delay: 0ms !important;
+            opacity: 1;
+            transform: none;
+        }
     }
 }
 
-.travel-tag {
-    position: relative;
-    background: rgb(31 41 55 / 0.7);
-    border: 1px solid #374151;
-    border-radius: 22px 12px 12px 22px;
-    box-shadow:
-        0 10px 15px -3px rgb(0 0 0 / 0.4),
-        0 4px 6px -4px rgb(0 0 0 / 0.4);
+@layer components {
+    .tech-grid {
+        background-image:
+            linear-gradient(to right, rgb(41 70 84 / 0.16) 1px, transparent 1px),
+            linear-gradient(to bottom, rgb(41 70 84 / 0.16) 1px, transparent 1px);
+        background-size: 48px 48px;
+    }
+
+    .glow-cyan {
+        background: radial-gradient(circle at 88% 4%, rgb(0 217 255 / 0.1), transparent 40%);
+    }
+
+    .glow-acid {
+        background: radial-gradient(circle at 8% 92%, rgb(0 255 156 / 0.07), transparent 38%);
+    }
+
+    .vignette {
+        background: radial-gradient(ellipse at center, transparent 30%, rgb(4 7 10 / 0.72) 100%);
+    }
+
+    .scanlines {
+        background-image: repeating-linear-gradient(
+            to bottom,
+            rgb(214 230 236 / 0.022) 0 1px,
+            transparent 1px 3px
+        );
+        animation: scanline-drift 14s linear infinite;
+    }
+
+    .noise {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+        background-size: 180px 180px;
+        opacity: 0.035;
+    }
+
+    .pointer-glow {
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        background: radial-gradient(
+            420px circle at var(--pointer-x, 50%) var(--pointer-y, 20%),
+            rgb(0 217 255 / 0.07),
+            transparent 65%
+        );
+    }
+
+    .pointer-live .pointer-glow {
+        opacity: 1;
+    }
+
+    @media (pointer: coarse), (prefers-reduced-motion: reduce) {
+        .pointer-glow {
+            display: none;
+        }
+    }
+
+    .hero-body {
+        container-type: inline-size;
+    }
+
+    .hero-name {
+        font-size: clamp(2.2rem, 11cqw, 6.5rem);
+        text-shadow:
+            0 0 28px rgb(0 255 156 / 0.14),
+            -1px 0 rgb(0 217 255 / 0.32),
+            1px 0 rgb(255 46 99 / 0.2);
+    }
+
+    .cursor-block {
+        display: inline-block;
+        width: 0.52em;
+        height: 0.86em;
+        margin-left: 0.1em;
+        vertical-align: -0.04em;
+        background: var(--color-acid);
+        box-shadow: 0 0 12px rgb(0 255 156 / 0.5);
+        animation: cursor-blink 1.1s steps(1, end) infinite;
+    }
+
+    .cut {
+        position: relative;
+        isolation: isolate;
+        border: 0;
+    }
+
+    .cut::before,
+    .cut::after {
+        content: "";
+        position: absolute;
+        clip-path: polygon(
+            0 0,
+            calc(100% - 11px) 0,
+            100% 11px,
+            100% 100%,
+            11px 100%,
+            0 calc(100% - 11px)
+        );
+        pointer-events: none;
+    }
+
+    .cut::before {
+        inset: 0;
+        z-index: -2;
+        background: var(--cut-edge, var(--color-line));
+    }
+
+    .cut::after {
+        inset: 1px;
+        z-index: -1;
+        background: var(--cut-fill, var(--color-panel));
+        transition: background-color 0.2s ease;
+    }
+
+    .cut-primary {
+        --cut-edge: var(--color-acid);
+        --cut-fill: var(--color-acid);
+    }
+
+    .cut-primary:hover {
+        --cut-fill: #00e68c;
+    }
+
+    .cut-outline {
+        --cut-edge: var(--color-line);
+        --cut-fill: var(--color-panel);
+    }
+
+    .cut-outline:hover {
+        --cut-edge: var(--color-cyan);
+    }
+
+    .cut-ghost {
+        --cut-edge: var(--color-line);
+        --cut-fill: var(--color-void);
+    }
+
+    .cut-ghost:hover {
+        --cut-edge: var(--color-line-hot);
+    }
+
+    .cut-danger {
+        --cut-edge: rgb(255 46 99 / 0.55);
+        --cut-fill: var(--color-panel);
+    }
+
+    .cut-danger:hover {
+        --cut-fill: var(--color-magenta);
+    }
+
+    .led {
+        display: inline-block;
+        width: 5px;
+        height: 5px;
+        border-radius: 9999px;
+        background: var(--color-acid);
+        box-shadow: 0 0 6px rgb(0 255 156 / 0.8);
+        animation: led-pulse 2.4s ease-in-out infinite;
+    }
+
+    .led-magenta {
+        background: var(--color-magenta);
+        box-shadow: 0 0 6px rgb(255 46 99 / 0.75);
+        animation-duration: 1.4s;
+    }
+
+    .load-bar {
+        position: relative;
+    }
+
+    .load-bar::after {
+        content: "";
+        position: absolute;
+        inset-block: 0;
+        width: 28%;
+        background: var(--color-acid);
+        box-shadow: 0 0 12px rgb(0 255 156 / 0.55);
+        animation: loadbar 1.8s ease-in-out infinite;
+    }
+
+    .ticker {
+        overflow: hidden;
+        mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+        -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    }
+
+    .ticker-track {
+        animation: ticker-scroll 70s linear infinite;
+    }
+
+    .ticker:hover .ticker-track {
+        animation-play-state: paused;
+    }
+
+    .repo-card {
+        animation: repo-in 0.45s ease-out backwards;
+    }
+
+    .repo-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(
+            105deg,
+            transparent 35%,
+            rgb(0 255 156 / 0.05) 50%,
+            transparent 65%
+        );
+        transform: translateX(-120%);
+        transition: transform 0.7s ease;
+    }
+
+    .repo-card:hover::after {
+        transform: translateX(120%);
+    }
 }
 
-/* punched hole + metal grommet */
-.travel-tag-hole {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    width: 16px;
-    height: 16px;
-    transform: translateY(-50%);
-    border-radius: 9999px;
-    background: #111827;
-    box-shadow:
-        inset 0 1px 3px rgb(0 0 0 / 0.9),
-        0 0 0 3px #4b5563,
-        0 0 0 4.5px #1f2937,
-        0 1px 2px rgb(0 0 0 / 0.5);
-    z-index: 1;
+@keyframes cursor-blink {
+    0%,
+    49% {
+        opacity: 1;
+    }
+    50%,
+    100% {
+        opacity: 0;
+    }
 }
 
-/* perforation between hole and photo */
-.travel-tag-perf {
-    border-left: 2px dashed rgb(75 85 99 / 0.8);
+@keyframes led-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.35;
+    }
 }
 
-/* ID photo */
-.travel-tag-photo {
-    width: 68px;
-    height: 82px;
-    object-fit: cover;
-    object-position: center;
-    border-radius: 6px;
-    border: 2px solid #4b5563;
-    box-shadow: 0 2px 6px rgb(0 0 0 / 0.4);
-    transform: rotate(2deg);
+@keyframes loadbar {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(460%);
+    }
 }
 
-.travel-tag-stamp {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    color: #93c5fd;
-    background: rgb(59 130 246 / 0.1);
-    border: 1px solid rgb(59 130 246 / 0.2);
-    border-radius: 9999px;
-    padding: 4px 12px;
-    line-height: 1.4;
-    transform: rotate(-1.2deg);
+@keyframes scanline-drift {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 0 3px;
+    }
 }
 
-.travel-tag-stamp:nth-child(odd) {
-    transform: rotate(1.2deg);
+@keyframes ticker-scroll {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+@keyframes repo-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

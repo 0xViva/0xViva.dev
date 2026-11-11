@@ -3,19 +3,14 @@ package github
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/0xViva/0xViva.dev/components"
 	"io"
 	"log"
 	"net/http"
 	"sort"
 	"sync"
 	"time"
-)
 
-var (
-	repoWg      sync.WaitGroup
-	mu          sync.Mutex
-	githubRepos []components.GitHubRepo
+	"github.com/0xViva/0xViva.dev/components"
 )
 
 func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
@@ -45,13 +40,16 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 	}
 
 	var repos []struct {
-		Name        string    `json:"name"`
-		FullName    string    `json:"full_name"`
-		HTMLURL     string    `json:"html_url"`
-		Description string    `json:"description"`
-		UpdatedAt   time.Time `json:"updated_at"`
-		Visibility  string    `json:"visibility"`
-		Owner       struct {
+		Name            string    `json:"name"`
+		FullName        string    `json:"full_name"`
+		HTMLURL         string    `json:"html_url"`
+		Description     string    `json:"description"`
+		UpdatedAt       time.Time `json:"updated_at"`
+		Visibility      string    `json:"visibility"`
+		StargazersCount int       `json:"stargazers_count"`
+		ForksCount      int       `json:"forks_count"`
+		Language        string    `json:"language"`
+		Owner           struct {
 			Login string `json:"login"`
 		} `json:"owner"`
 	}
@@ -60,10 +58,14 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 		return nil, fmt.Errorf("failed to decode repos response: %w", err)
 	}
 
-	githubRepos := make([]components.GitHubRepo, 0, len(repos))
-	for _, repo := range repos {
+	var (
+		repoWg sync.WaitGroup
+		mu     sync.Mutex
+		result = make([]components.GitHubRepo, 0, len(repos))
+	)
 
-		repo := repo // capture loop variable
+	for _, repo := range repos {
+		repo := repo
 		repoWg.Add(1)
 		go func() {
 			defer repoWg.Done()
@@ -88,7 +90,6 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 				return
 			}
 
-			// Fetch branches
 			branchesReq, _ := http.NewRequest("GET", fmt.Sprintf("https://api.github.com/repos/%s/%s/branches", repo.Owner.Login, repo.Name), nil)
 			branchesReq.Header.Set("Authorization", "Bearer "+token)
 
@@ -125,7 +126,6 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 				go func() {
 					defer branchWg.Done()
 
-					// Fetch commits
 					commitReq, _ := http.NewRequest("GET", fmt.Sprintf("https://api.github.com/repos/%s/%s/commits?sha=%s&per_page=6&author=%s", repo.Owner.Login, repo.Name, branch.Name, author), nil)
 					commitReq.Header.Set("Authorization", "Bearer "+token)
 
@@ -153,11 +153,8 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 					}
 
 					for _, base := range baseCommits {
-						if base.Commit.Author.Name != author {
-							continue
-						}
-
-						// Fetch commit details
+						// The API query already filters by author login. A commit can
+						// carry a different display name, so do not filter again here.
 						detailsReq, _ := http.NewRequest("GET", fmt.Sprintf("https://api.github.com/repos/%s/%s/commits/%s", repo.Owner.Login, repo.Name, base.SHA), nil)
 						detailsReq.Header.Set("Authorization", "Bearer "+token)
 
@@ -204,7 +201,6 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 				return
 			}
 
-			// Update UpdatedAt from commits
 			for _, c := range enrichedCommits {
 				if c.Author.Date.After(repo.UpdatedAt) {
 					repo.UpdatedAt = c.Author.Date
@@ -220,7 +216,7 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 			}
 
 			mu.Lock()
-			githubRepos = append(githubRepos, components.GitHubRepo{
+			result = append(result, components.GitHubRepo{
 				Name:        repo.Name,
 				HTMLURL:     repo.HTMLURL,
 				Description: repo.Description,
@@ -230,17 +226,20 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 				Commits:     enrichedCommits,
 				Branches:    branchNames,
 				Languages:   languages,
+				Stars:       repo.StargazersCount,
+				Forks:       repo.ForksCount,
+				Language:    repo.Language,
 			})
 			mu.Unlock()
 		}()
 	}
 
 	repoWg.Wait()
-	sort.Slice(githubRepos, func(i, j int) bool {
-		return githubRepos[i].UpdatedAt.After(githubRepos[j].UpdatedAt)
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].UpdatedAt.After(result[j].UpdatedAt)
 	})
-	if len(githubRepos) > 3 {
-		githubRepos = githubRepos[:3]
+	if len(result) > 3 {
+		result = result[:3]
 	}
-	return githubRepos, nil
+	return result, nil
 }

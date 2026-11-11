@@ -79,7 +79,7 @@ func browseRepos(c echo.Context) error {
 	repos, err := github.GetLatestRepos(githubToken)
 	if err != nil {
 		c.Logger().Errorf("Failed to fetch GitHub repos: %v", err)
-		return render(c, components.RepoContainer(nil))
+		return render(c, components.RepoError())
 	}
 	return render(c, components.RepoContainer(repos))
 }

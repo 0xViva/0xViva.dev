@@ -1,43 +1,50 @@
 package components
 
 templ Header(name string) {
-	<header class="relative mb-auto flex flex-wrap z-50 w-full text-sm py-4">
-		<nav class="w-full px-4 sm:flex sm:items-center sm:justify-between sm:px-6 lg:px-8">
-			<div class="travel-tag flex items-center gap-3 py-3 pr-5 pl-10 sm:gap-4 sm:pr-6 sm:pl-11 -rotate-1 transition-transform duration-200 hover:rotate-0">
-				<span aria-hidden="true" class="travel-tag-hole"></span>
+	<header class="sticky top-0 z-50 h-12 border-b border-line bg-void/90 backdrop-blur-md">
+		<div class="mx-auto flex h-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+			<a
+				href="/"
+				class="group flex min-w-0 items-center gap-2"
+				aria-label={ "0xVIVA, " + name }
+			>
+				<span aria-hidden="true" class="text-sm text-acid">{ ">_" }</span>
+				<span class="text-xs tracking-[0.18em] text-fg transition-colors group-hover:text-acid">0xVIVA</span>
+			</a>
+
+			<nav aria-label="Primary" class="flex items-center gap-3 sm:gap-5">
+				<a href="#commits" class="text-[10px] tracking-[0.14em] text-muted transition-colors hover:text-acid">commits</a>
 				<a
-					class="flex-none focus:outline-none focus:opacity-80"
-					href="/"
-					aria-label="Brand"
+					href="https://github.com/0xViva"
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label="GitHub"
+					class="group flex items-center gap-1.5 text-[10px] tracking-[0.14em] text-muted transition-colors hover:text-acid"
 				>
-					<img src="/assets/jpg/august.jpg" alt="Personal profile picture" width="68" height="82" class="travel-tag-photo"/>
+					<img src="/assets/svg/github.svg" alt="" aria-hidden="true" class="size-3.5 invert opacity-70 transition-opacity group-hover:opacity-100"/>
+					<span class="hidden sm:inline">GitHub</span>
 				</a>
-				<div class="travel-tag-perf flex min-w-0 flex-col gap-1.5 pl-3 sm:pl-4">
-					<div class="min-w-0">
-						<p class="text-[10px] uppercase tracking-[0.2em] text-gray-500">navn</p>
-						<p class="truncate text-lg font-semibold leading-tight tracking-tight text-white sm:text-xl">
-							{ name }
-						</p>
-					</div>
-					<div class="flex flex-wrap items-center gap-1.5">
-						<span class="text-[10px] uppercase tracking-[0.2em] text-gray-500">email:</span>
-						<a href="mailto:0xViva@proton.me" class="w-fit text-xs text-gray-300 hover:text-white hover:underline focus:outline-none">
-							0xViva@proton.me
-						</a>
-					</div>
-					<div class="flex flex-wrap items-center gap-1.5 border-t border-dashed border-gray-700 pt-1.5">
-						<span class="text-[10px] uppercase tracking-[0.2em] text-gray-500">aliases:</span>
-						<span class="travel-tag-stamp">0xViva</span>
-						<span class="travel-tag-stamp">AugustG</span>
-						<span class="travel-tag-stamp">ajg</span>
-					</div>
-				</div>
-			</div>
-			<div class="flex flex-col items-end gap-1 mt-4 sm:mt-0">
-				<p class="text-xs text-gray-600 dark:text-gray-400">look at my badge!</p>
-				<augustg-dev-badge class="scale-75 sm:scale-90 md:scale-100 origin-top-right"></augustg-dev-badge>
-				<script src="/assets/js/augustg-dev-badge.js"></script>
-			</div>
-		</nav>
+				<a
+					href="https://www.linkedin.com/in/august-justinus-gran"
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label="LinkedIn"
+					class="group flex items-center gap-1.5 text-[10px] tracking-[0.14em] text-muted transition-colors hover:text-acid"
+				>
+					<img src="/assets/svg/linkedin.svg" alt="" aria-hidden="true" class="size-3.5 invert opacity-70 transition-opacity group-hover:opacity-100"/>
+					<span class="hidden sm:inline">LinkedIn</span>
+				</a>
+				<a
+					href="mailto:0xViva@proton.me"
+					aria-label="Email"
+					class="group flex items-center gap-1.5 text-[10px] tracking-[0.14em] text-muted transition-colors hover:text-acid"
+				>
+					<img src="/assets/svg/email.svg" alt="" aria-hidden="true" class="size-3.5 invert opacity-70 transition-opacity group-hover:opacity-100"/>
+					<span class="hidden sm:inline">email</span>
+				</a>
+
+				<span class="hidden text-[10px] tabular-nums tracking-[0.08em] text-dim md:inline" data-hud-clock>--:--:-- UTC</span>
+			</nav>
+		</div>
 	</header>
 }

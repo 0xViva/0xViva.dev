@@ -3,14 +3,16 @@ package components
 import "time"
 
 templ RepoContainer(repos []GitHubRepo) {
-	if len(repos) > 0 {
-		<div class="mt-10 text-left">
-			<h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">Latest Projects</h2>
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				for _, repo := range repos {
-					@RepoCard(repo)
-				}
-			</div>
+	if len(repos) == 0 {
+		<div class="border border-line p-6" role="status">
+			<p class="text-[10px] tracking-[0.22em] text-dim">NO REPOSITORIES</p>
+			<p class="mt-2 text-sm text-muted">GitHub returned no repositories.</p>
+		</div>
+	} else {
+		<div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+			for i, repo := range repos {
+				@RepoCard(repo, i+1)
+			}
 		</div>
 	}
 }
@@ -27,6 +29,9 @@ type GitHubRepo struct {
 	Commits   []GitHubCommit `json:"commits"`
 	Branches  []string       `json:"branches"`
 	Languages map[string]int `json:"languages"`
+	Stars     int            `json:"stars"`
+	Forks     int            `json:"forks"`
+	Language  string         `json:"language"`
 }
 
 type GitHubCommit struct {

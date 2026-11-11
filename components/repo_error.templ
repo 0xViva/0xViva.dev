@@ -1,0 +1,20 @@
+package components
+
+templ RepoError() {
+	<div class="border border-magenta/40 p-6" role="alert">
+		<div class="flex items-center gap-2.5">
+			<span class="led led-magenta" aria-hidden="true"></span>
+			<p class="text-[10px] tracking-[0.22em] text-magenta">COMMIT FEED UNAVAILABLE</p>
+		</div>
+		<p class="mt-3 max-w-2xl text-sm leading-relaxed text-muted">GitHub did not respond. Check the token, rate limit, or network.</p>
+		<button
+			type="button"
+			hx-get="/browse-repos"
+			hx-target="#repos"
+			hx-swap="innerHTML"
+			class="cut cut-danger mt-4 inline-flex items-center px-4 py-2 text-[10px] tracking-[0.18em] text-magenta transition-colors hover:text-void"
+		>
+			Retry
+		</button>
+	</div>
+}
