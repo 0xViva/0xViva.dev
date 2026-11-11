@@ -14,65 +14,77 @@ import (
 	"github.com/0xViva/0xViva.dev/components"
 )
 
-func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
+type apiRepo struct {
+	Name            string    `json:"name"`
+	FullName        string    `json:"full_name"`
+	HTMLURL         string    `json:"html_url"`
+	Description     string    `json:"description"`
+	UpdatedAt       time.Time `json:"updated_at"`
+	Visibility      string    `json:"visibility"`
+	StargazersCount int       `json:"stargazers_count"`
+	ForksCount      int       `json:"forks_count"`
+	Language        string    `json:"language"`
+	Owner           struct {
+		Login string `json:"login"`
+	} `json:"owner"`
+}
+
+type repoJob struct {
+	repo  apiRepo
+	token string
+}
+
+func GetLatestRepos(tokens []string) ([]components.GitHubRepo, error) {
 	client := &http.Client{Timeout: 30 * time.Second}
 	author := "0xViva"
-	req, err := http.NewRequest("GET",
-		fmt.Sprintf("https://api.github.com/user/repos?sort=pushed&direction=desc&per_page=10&author=%s", author), nil)
-	if err != nil {
-		log.Printf("failed to create repos request: %v", err)
-		return nil, fmt.Errorf("failed to create repos request: %w", err)
-	}
 
-	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("User-Agent", "personal-webpage")
+	var (
+		jobs      []repoJob
+		seenRepos = make(map[string]struct{})
+		lastErr   error
+	)
+	for i, token := range tokens {
+		repos, err := fetchRepos(client, token)
+		if err != nil {
+			log.Printf("failed to fetch repos for token %d: %v", i+1, err)
+			lastErr = err
+			continue
+		}
+		for _, repo := range repos {
+			// The profile repo only holds the README shown on the GitHub profile,
+			// so its commits do not belong in the feed.
+			if strings.EqualFold(repo.Name, repo.Owner.Login) {
+				continue
+			}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Printf("failed to fetch repos: %v", err)
-		return nil, fmt.Errorf("failed to fetch repos: %w", err)
+			key := repo.FullName
+			if key == "" {
+				key = repo.Owner.Login + "/" + repo.Name
+			}
+			if _, ok := seenRepos[key]; ok {
+				continue
+			}
+			seenRepos[key] = struct{}{}
+			jobs = append(jobs, repoJob{repo: repo, token: token})
+		}
 	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		log.Printf("github api returned status code %d, body: %s", resp.StatusCode, string(bodyBytes))
-		return nil, fmt.Errorf("github api returned status code %d, body: %s", resp.StatusCode, string(bodyBytes))
-	}
-
-	var repos []struct {
-		Name            string    `json:"name"`
-		FullName        string    `json:"full_name"`
-		HTMLURL         string    `json:"html_url"`
-		Description     string    `json:"description"`
-		UpdatedAt       time.Time `json:"updated_at"`
-		Visibility      string    `json:"visibility"`
-		StargazersCount int       `json:"stargazers_count"`
-		ForksCount      int       `json:"forks_count"`
-		Language        string    `json:"language"`
-		Owner           struct {
-			Login string `json:"login"`
-		} `json:"owner"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil {
-		log.Printf("failed to decode repos response: %v", err)
-		return nil, fmt.Errorf("failed to decode repos response: %w", err)
+	if len(jobs) == 0 {
+		if lastErr != nil {
+			return nil, lastErr
+		}
+		return nil, fmt.Errorf("no repositories found")
 	}
 
 	var (
 		repoWg sync.WaitGroup
 		mu     sync.Mutex
-		result = make([]components.GitHubRepo, 0, len(repos))
+		result = make([]components.GitHubRepo, 0, len(jobs))
 	)
 
-	for _, repo := range repos {
-		// The profile repo only holds the README shown on the GitHub profile,
-		// so its commits do not belong in the feed.
-		if strings.EqualFold(repo.Name, repo.Owner.Login) {
-			continue
-		}
-
-		repo := repo
+	for _, job := range jobs {
+		job := job
+		repo := job.repo
+		repoToken := job.token
 		repoWg.Add(1)
 		go func() {
 			defer repoWg.Done()
@@ -82,7 +94,7 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 				fmt.Sprintf("https://api.github.com/repos/%s/%s/languages", repo.Owner.Login, repo.Name),
 				nil,
 			)
-			languagesReq.Header.Set("Authorization", "Bearer "+token)
+			languagesReq.Header.Set("Authorization", "Bearer "+repoToken)
 
 			languagesResp, err := client.Do(languagesReq)
 			if err != nil {
@@ -98,7 +110,7 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 			}
 
 			branchesReq, _ := http.NewRequest("GET", fmt.Sprintf("https://api.github.com/repos/%s/%s/branches", repo.Owner.Login, repo.Name), nil)
-			branchesReq.Header.Set("Authorization", "Bearer "+token)
+			branchesReq.Header.Set("Authorization", "Bearer "+repoToken)
 
 			branchesResp, err := client.Do(branchesReq)
 			if err != nil {
@@ -134,7 +146,7 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 					defer branchWg.Done()
 
 					commitReq, _ := http.NewRequest("GET", fmt.Sprintf("https://api.github.com/repos/%s/%s/commits?sha=%s&per_page=6&author=%s", repo.Owner.Login, repo.Name, branch.Name, author), nil)
-					commitReq.Header.Set("Authorization", "Bearer "+token)
+					commitReq.Header.Set("Authorization", "Bearer "+repoToken)
 
 					commitResp, err := client.Do(commitReq)
 					if err != nil {
@@ -163,7 +175,7 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 						// The API query already filters by author login. A commit can
 						// carry a different display name, so do not filter again here.
 						detailsReq, _ := http.NewRequest("GET", fmt.Sprintf("https://api.github.com/repos/%s/%s/commits/%s", repo.Owner.Login, repo.Name, base.SHA), nil)
-						detailsReq.Header.Set("Authorization", "Bearer "+token)
+						detailsReq.Header.Set("Authorization", "Bearer "+repoToken)
 
 						detailsResp, err := client.Do(detailsReq)
 						if err != nil {
@@ -249,4 +261,31 @@ func GetLatestRepos(token string) ([]components.GitHubRepo, error) {
 		result = result[:3]
 	}
 	return result, nil
+}
+
+func fetchRepos(client *http.Client, token string) ([]apiRepo, error) {
+	req, err := http.NewRequest("GET",
+		"https://api.github.com/user/repos?sort=pushed&direction=desc&per_page=10&affiliation=owner,collaborator,organization_member", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create repos request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("User-Agent", "personal-webpage")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch repos: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("github api returned status code %d, body: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	var repos []apiRepo
+	if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil {
+		return nil, fmt.Errorf("failed to decode repos response: %w", err)
+	}
+	return repos, nil
 }

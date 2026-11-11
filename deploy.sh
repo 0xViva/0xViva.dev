@@ -15,7 +15,7 @@ CURRENT_USER="$(id -un)"
 : "${IMAGE_TAG:?IMAGE_TAG must be set}"
 : "${INTERNAL_PORT:?INTERNAL_PORT must be set}"
 : "${EXTERNAL_PORT:?EXTERNAL_PORT must be set}"
-: "${GITHUB_TOKEN:?GITHUB_TOKEN must be set}"
+: "${GITHUB_TOKENS:?GITHUB_TOKENS must be set}"
 : "${CSS_VERSION:=dev}"
 
 # Non-login SSH sessions do not always get these from PAM, but systemctl --user
@@ -42,12 +42,13 @@ if ! podman image exists "localhost/0xviva/0xviva.dev:${IMAGE_TAG}"; then
     exit 1
 fi
 
-# GITHUB_TOKEN is a secret (PAT) used by /browse-repos at runtime.
+# GITHUB_TOKENS is a comma-separated list of PATs (one per repo owner)
+# used by /browse-repos at runtime.
 (
     umask 077
     cat > "${SCRIPT_DIR}/.env" <<EOF
 PORT=${INTERNAL_PORT}
-GITHUB_TOKEN=${GITHUB_TOKEN}
+GITHUB_TOKENS=${GITHUB_TOKENS}
 CSS_VERSION=${CSS_VERSION}
 EOF
 )

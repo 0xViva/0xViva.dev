@@ -45,8 +45,8 @@ A terminal-inspired homepage for **August Justinus Gran**, built with Go and ser
 # 1. Clone the repo
 git clone https://github.com/0xViva/0xViva.dev && cd 0xViva.dev
 
-# 2. Add a read-only GitHub token for the commit feed
-echo "GITHUB_TOKEN=ghp_your_token" > .env
+# 2. Add read-only GitHub tokens (one per repo owner, comma-separated)
+echo "GITHUB_TOKENS=ghp_personal,github_pat_org_one,github_pat_org_two" > .env
 
 # 3. Run with hot reload on http://localhost:8080
 task dev

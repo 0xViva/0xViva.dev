@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	githubToken string
-	cssVersion  string
+	githubTokens []string
+	cssVersion   string
 )
 
 func main() {
@@ -22,7 +22,10 @@ func main() {
 
 	godotenv.Load()
 
-	githubToken = os.Getenv("GITHUB_TOKEN")
+	githubTokens = splitTokens(os.Getenv("GITHUB_TOKENS"))
+	if len(githubTokens) == 0 {
+		githubTokens = splitTokens(os.Getenv("GITHUB_TOKEN"))
+	}
 	cssVersion = os.Getenv("CSS_VERSION")
 	if cssVersion == "" {
 		cssVersion = "dev"
@@ -76,7 +79,7 @@ func titleForHost(host string) string {
 	}
 }
 func browseRepos(c echo.Context) error {
-	repos, err := github.GetLatestRepos(githubToken)
+	repos, err := github.GetLatestRepos(githubTokens)
 	if err != nil {
 		c.Logger().Errorf("Failed to fetch GitHub repos: %v", err)
 		return render(c, components.RepoError())
@@ -86,4 +89,15 @@ func browseRepos(c echo.Context) error {
 
 func render(ctx echo.Context, cmp templ.Component) error {
 	return cmp.Render(ctx.Request().Context(), ctx.Response())
+}
+
+// splitTokens parses a comma-separated list of GitHub tokens.
+func splitTokens(raw string) []string {
+	var tokens []string
+	for _, token := range strings.Split(raw, ",") {
+		if token = strings.TrimSpace(token); token != "" {
+			tokens = append(tokens, token)
+		}
+	}
+	return tokens
 }

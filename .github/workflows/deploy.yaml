@@ -60,12 +60,12 @@ jobs:
           CSS_VERSION: ${{ env.SHORT_SHA }}
           INTERNAL_PORT: ${{ vars.INTERNAL_PORT }}
           EXTERNAL_PORT: ${{ vars.EXTERNAL_PORT }}
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKENS: ${{ secrets.PAT }},${{ secrets.PAT_LCX }},${{ secrets.PAT_TEKNOLOGIPUNKTET }}
         with:
           host: ${{ vars.VPS_ADDRESS }}
           username: deploy
           key: ${{ secrets.VPS_DEPLOYMENT_PRIVATE_KEY }}
-          envs: IMAGE_TAG,CSS_VERSION,INTERNAL_PORT,EXTERNAL_PORT,GITHUB_TOKEN
+          envs: IMAGE_TAG,CSS_VERSION,INTERNAL_PORT,EXTERNAL_PORT,GITHUB_TOKENS
           script: |
             set -euo pipefail
             cd /home/deploy/0xviva.dev
