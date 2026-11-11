@@ -46,12 +46,16 @@ templ RepoCard(repo GitHubRepo, index int) {
 
 		<h3 class="relative mt-4 flex min-w-0 items-center gap-2 text-lg leading-tight text-fg">
 			<img src="/assets/svg/github.svg" alt="" aria-hidden="true" class="size-4 shrink-0 invert opacity-70"/>
-			<a
-				href={ templ.SafeURL(repo.HTMLURL) }
-				target="_blank"
-				rel="noopener noreferrer"
-				class="min-w-0 break-all hover:text-acid"
-			>{ repo.Name }</a>
+			<span class="min-w-0 break-all">
+				<span class="text-sm text-dim">{ repo.Owner.Login }</span>
+				<span class="text-dim">/</span>
+				<a
+					href={ templ.SafeURL(repo.HTMLURL) }
+					target="_blank"
+					rel="noopener noreferrer"
+					class="hover:text-acid"
+				>{ repo.Name }</a>
+			</span>
 		</h3>
 
 		if repo.Description == "" {
