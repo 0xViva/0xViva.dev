@@ -1,11 +1,12 @@
 # Fetch dependencies
-FROM golang:1.24 AS fetch-stage
+FROM golang:1.26 AS fetch-stage
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Generate templ files
-FROM ghcr.io/a-h/templ:latest AS generate-stage
+# Generate templ files. Keep this tag in lockstep with go.mod: a newer templ
+# binary emits runtime calls that the pinned templ module does not have.
+FROM ghcr.io/a-h/templ:v0.3.1100 AS generate-stage
 COPY --chown=65532:65532 . /app
 WORKDIR /app
 RUN ["templ", "generate"]
@@ -22,7 +23,7 @@ RUN wget https://github.com/tailwindlabs/tailwindcss/releases/download/v4.0.14/t
 RUN tailwindcss -i /app/style/input.css -o /app/style/output.css --minify
 
 # Build the server binary
-FROM golang:1.24 AS build-stage
+FROM golang:1.26 AS build-stage
 WORKDIR /app
 COPY --from=fetch-stage /app /app 
 COPY --from=generate-stage /app /app  
