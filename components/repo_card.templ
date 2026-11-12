@@ -9,6 +9,8 @@ import (
 
 templ RepoCard(repo GitHubRepo, index int) {
 	{{ segments := ui.LanguageSegments(repo.Languages) }}
+	{{ isPrivate := repo.Visibility == "private" }}
+	{{ isCollab := repo.Owner.Login != "0xViva" }}
 	<article
 		class="repo-card group relative flex h-full flex-col overflow-hidden border border-line p-5 transition-[border-color,translate] duration-200 hover:-translate-y-0.5 hover:border-acid/70 sm:p-6"
 		style={ "animation-delay:" + strconv.Itoa(max(0, index-1)*60) + "ms" }
@@ -19,7 +21,7 @@ templ RepoCard(repo GitHubRepo, index int) {
 		<header class="relative flex items-start justify-between gap-3">
 			<span class="text-[10px] tracking-[0.18em] text-dim">{ ui.RepoIndex(index) }</span>
 			<div class="flex flex-wrap justify-end gap-1">
-				if repo.Visibility == "private" {
+				if isPrivate {
 					<span class="inline-flex items-center gap-1 border border-magenta/40 bg-magenta/5 px-1.5 py-0.5 text-[9px] uppercase tracking-[0.18em] text-magenta">
 						<img src="/assets/svg/locked.svg" alt="" aria-hidden="true" class="size-3"/>
 						private
@@ -30,7 +32,7 @@ templ RepoCard(repo GitHubRepo, index int) {
 						public
 					</span>
 				}
-				if repo.Owner.Login == "0xViva" {
+				if !isCollab {
 					<span class="inline-flex items-center gap-1 border border-line px-1.5 py-0.5 text-[9px] uppercase tracking-[0.18em] text-muted">
 						<img src="/assets/svg/personal.svg" alt="" aria-hidden="true" class="size-3"/>
 						owned
@@ -58,10 +60,12 @@ templ RepoCard(repo GitHubRepo, index int) {
 			</span>
 		</h3>
 
-		if repo.Description == "" {
-			<p class="relative mt-2 text-sm leading-relaxed text-dim">No description.</p>
-		} else {
-			<p class="relative mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{ repo.Description }</p>
+		if !isCollab {
+			if repo.Description == "" {
+				<p class="relative mt-2 text-sm leading-relaxed text-dim">No description.</p>
+			} else {
+				<p class="relative mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{ repo.Description }</p>
+			}
 		}
 
 		<div class="relative mt-5">
@@ -134,7 +138,7 @@ templ RepoCard(repo GitHubRepo, index int) {
 									rel="noopener noreferrer"
 									class="shrink-0 text-cyan/80 hover:text-cyan"
 								>{ ui.ShortSHA(commit.SHA) }</a>
-								if repo.Visibility == "private" {
+								if isPrivate {
 									<span class="flex min-w-0 flex-1 items-center gap-1.5 text-dim">
 										<img src="/assets/svg/locked.svg" alt="" aria-hidden="true" class="size-3 opacity-70"/>
 										<span>private commit</span>
